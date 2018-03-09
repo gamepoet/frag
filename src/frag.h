@@ -50,6 +50,12 @@ void* frag_realloc_ex(struct frag_allocator_t* allocator,
 // Gets the system allocator.
 struct frag_allocator_t* frag_system_allocator();
 
+// Destroys the given allocator.
+void frag_allocator_destroy(struct frag_allocator_t* owner, struct frag_allocator_t* allocator);
+
+// Creates a stack allocator that works from a fixed buffer
+struct frag_allocator_t* frag_fixed_stack_allocator_create(struct frag_allocator_t* owner, const char* name, char* buf, size_t buf_size);
+
 #ifdef __cplusplus
 #define FRAG_NEW(allocator, T, ...)                                                                                    \
   (new (frag_alloc_ex(allocator, sizeof(T), alignof(T), __FILE__, __LINE__, __func__)) T(__VA_ARGS__))

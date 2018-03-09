@@ -22,6 +22,24 @@ void allocator_init(frag_allocator_t* allocator,
 void allocator_shutdown(frag_allocator_t* allocator) {
 }
 
+void frag_assert(bool cond, const char* message) {
+  // TODO!
+}
+
+bool is_pow_2(size_t x) {
+  return ((x != 0) && (x & (x - 1)));
+}
+
+uintptr_t align_up(uintptr_t val, size_t alignment) {
+  return (val + (alignment - 1)) & ~(alignment - 1);
+}
+
+void* align_up_with_offset_ptr(void* cur, size_t alignment, size_t offset) {
+  cur = cur + offset;
+  cur = (void*)align_up((uintptr_t)cur, alignment);
+  return cur;
+}
+
 void report_alloc(frag_allocator_t* allocator,
                   void* ptr,
                   size_t size_requested,
@@ -88,4 +106,17 @@ void frag_free_ex(struct frag_allocator_t* allocator, void* ptr, const char* fil
 
 struct frag_allocator_t* frag_system_allocator() {
   return s_system_allocator;
+}
+
+void frag_allocator_destroy(struct frag_allocator_t* owner, struct frag_allocator_t* allocator) {
+  // TODO: call the correct allocator
+  frag_free(owner, allocator);
+}
+
+struct frag_allocator_t* frag_fixed_stack_allocator_create(struct frag_allocator_t* owner, const char* name, char* buf, size_t buf_size) {
+  const size_t alloc_size = sizeof(frag_allocator_t) + sizeof(fixed_stack_allocator_impl_t);
+  frag_allocator_t* allocator = (frag_allocator_t*)frag_alloc(owner, alloc_size, 16);
+  allocator->impl = (struct allocator_impl_t*)(allocator + 1);
+  fixed_stack_init(allocator, name, buf, buf_size);
+  return allocator;
 }

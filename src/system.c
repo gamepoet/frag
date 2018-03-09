@@ -3,7 +3,7 @@
 
 static void* system_alloc(frag_allocator_t* allocator,
                           size_t size,
-                          unsigned int alignment,
+                          size_t alignment,
                           const char* file,
                           int line,
                           const char* func) {
@@ -24,7 +24,7 @@ static void system_free(frag_allocator_t* allocator, void* ptr, const char* file
   }
 }
 
-static size_t system_get_size(frag_allocator_t* allocator, void* ptr) {
+static size_t system_get_size(const frag_allocator_t* allocator, void* ptr) {
   return malloc_size(ptr);
 }
 

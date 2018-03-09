@@ -3,6 +3,7 @@ project(frag)
 
 set(
   SRCS
+  src/fixed_stack.c
   src/frag.c
   src/frag.h
   src/internal.h
@@ -27,8 +28,10 @@ target_include_directories(
 set(
   TEST_SRCS
   spec/catch.hpp
+  spec/fixed_stack_spec.cpp
   spec/main.cpp
   spec/system_spec.cpp
+  spec/utils.cpp
 )
 
 add_executable(test_frag ${TEST_SRCS})
