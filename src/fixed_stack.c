@@ -52,18 +52,20 @@ static void fixed_stack_free(frag_allocator_t* allocator, void* ptr, const char*
 
   const size_t size = fixed_stack_get_size(allocator, ptr);
   report_free(allocator, ptr, size, file, line, func);
-  impl->cur = (char*)ptr - size;
+  struct header_t* header = (struct header_t*)ptr - 1;
+  impl->cur = (char*)ptr - header->pad;
+}
+
+static void fixed_stack_shutdown(frag_allocator_t* allocator) {
+  allocator_shutdown(allocator);
 }
 
 void fixed_stack_init(frag_allocator_t* allocator, const char* name, char* buf, size_t size) {
   frag_assert(allocator != NULL, "allocator arg is null");
   frag_assert(buf != NULL, "buf arg is null");
-  allocator_init(allocator, name, &fixed_stack_alloc, &fixed_stack_free, &fixed_stack_get_size);
+  allocator_init(allocator, name, &fixed_stack_alloc, &fixed_stack_free, &fixed_stack_get_size, &fixed_stack_shutdown);
   fixed_stack_allocator_impl_t* impl = GET_IMPL(allocator);
   impl->beg = buf;
   impl->end = buf + size;
   impl->cur = buf;
-}
-
-void fixed_stack_shutdown(frag_allocator_t* allocator) {
 }

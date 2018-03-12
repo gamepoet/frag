@@ -14,6 +14,7 @@ typedef void* (*alloc_func_t)(struct frag_allocator_t* allocator,
 typedef void (
     *free_func_t)(struct frag_allocator_t* allocator, void* ptr, const char* file, int line, const char* func);
 typedef size_t (*get_size_func_t)(const struct frag_allocator_t* allocator, void* ptr);
+typedef void (*shutdown_func_t)(struct frag_allocator_t* allocator);
 
 typedef struct frag_allocator_t {
   const char* name;
@@ -26,19 +27,23 @@ typedef struct frag_allocator_t {
   alloc_func_t alloc;
   free_func_t free;
   get_size_func_t get_size;
+  shutdown_func_t shutdown;
 } frag_allocator_t;
 
 void allocator_init(frag_allocator_t* allocator,
                     const char* name,
                     alloc_func_t alloc_func,
                     free_func_t free_func,
-                    get_size_func_t get_size_func);
+                    get_size_func_t get_size_func,
+                    shutdown_func_t shutdown_func);
 void allocator_shutdown(frag_allocator_t* allocator);
 
-void frag_assert(bool cond, const char* message);
+void frag_assert_ex(const char* file, int line, const char* func, const char* expression, const char* message);
+#define frag_assert(expr, message)                                                                                     \
+  ((expr) ? true : (frag_assert_ex(__FILE__, __LINE__, __func__, #expr, message), false))
+
 bool is_pow_2(size_t x);
 void* align_up_with_offset_ptr(void* cur, size_t alignment, size_t offset);
-
 
 void report_alloc(frag_allocator_t* allocator,
                   void* ptr,
@@ -60,7 +65,6 @@ typedef struct system_allocator_impl_t {
 } system_allocator_impl_t;
 
 void system_init(frag_allocator_t* allocator);
-void system_shutdown(frag_allocator_t* allocator);
 
 typedef struct fixed_stack_allocator_impl_t {
   char* beg;
@@ -69,4 +73,3 @@ typedef struct fixed_stack_allocator_impl_t {
 } fixed_stack_allocator_impl_t;
 
 void fixed_stack_init(frag_allocator_t* allocator, const char* name, char* buf, size_t size);
-void fixed_stack_shutdown(frag_allocator_t* allocator);

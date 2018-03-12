@@ -32,6 +32,7 @@ set(
   spec/main.cpp
   spec/system_spec.cpp
   spec/utils.cpp
+  spec/utils.h
 )
 
 add_executable(test_frag ${TEST_SRCS})

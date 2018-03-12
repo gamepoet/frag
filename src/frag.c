@@ -1,14 +1,24 @@
 #include "frag.h"
 #include "internal.h"
+#include <stdio.h>
+
+// the configuration used to initialize this library
+static struct frag_config_t s_config;
 
 static char s_system_allocator_mem[sizeof(frag_allocator_t) + sizeof(system_allocator_impl_t)];
 static frag_allocator_t* s_system_allocator;
+
+static void default_assert(const char* file, int line, const char* func, const char* expression, const char* message) {
+  fprintf(stderr, "ASSERT FAILURE: %s\n%s\nfile: %s\nline: %d\nfunc: %s\n", expression, message, file, line, func);
+  exit(EXIT_FAILURE);
+}
 
 void allocator_init(frag_allocator_t* allocator,
                     const char* name,
                     alloc_func_t alloc_func,
                     free_func_t free_func,
-                    get_size_func_t get_size_func) {
+                    get_size_func_t get_size_func,
+                    shutdown_func_t shutdown_func) {
   allocator->name = name;
   allocator->stat_bytes = 0;
   allocator->stat_count = 0;
@@ -17,17 +27,19 @@ void allocator_init(frag_allocator_t* allocator,
   allocator->alloc = alloc_func;
   allocator->free = free_func;
   allocator->get_size = get_size_func;
+  allocator->shutdown = shutdown_func;
 }
 
 void allocator_shutdown(frag_allocator_t* allocator) {
+  frag_assert(allocator->stat_count == 0, "allocator shut down with unfreed allocations");
 }
 
-void frag_assert(bool cond, const char* message) {
-  // TODO!
+void frag_assert_ex(const char* file, int line, const char* func, const char* expression, const char* message) {
+  s_config.assert_handler(file, line, func, expression, message);
 }
 
 bool is_pow_2(size_t x) {
-  return ((x != 0) && (x & (x - 1)));
+  return ((x != 0) && !(x & (x - 1)));
 }
 
 uintptr_t align_up(uintptr_t val, size_t alignment) {
@@ -75,14 +87,30 @@ void report_out_of_memory(frag_allocator_t* allocator,
   // TODO: explode!?
 }
 
-void frag_init() {
+void frag_config_init(struct frag_config_t* config) {
+  if (config != NULL) {
+    config->assert_handler = &default_assert;
+  }
+}
+
+void frag_init(const struct frag_config_t* config) {
+  if (config != NULL) {
+    s_config = *config;
+  }
+  else {
+    frag_config_init(&s_config);
+  }
+
+  frag_assert(s_system_allocator == NULL, "frag_init is already initialized");
+
   s_system_allocator = (frag_allocator_t*)s_system_allocator_mem;
   s_system_allocator->impl = (struct allocator_impl_t*)(s_system_allocator + 1);
   system_init(s_system_allocator);
 }
 
 void frag_shutdown() {
-  system_shutdown(s_system_allocator);
+  s_system_allocator->shutdown(s_system_allocator);
+  s_system_allocator = NULL;
 }
 
 void* frag_alloc_ex(struct frag_allocator_t* allocator,
@@ -109,11 +137,15 @@ struct frag_allocator_t* frag_system_allocator() {
 }
 
 void frag_allocator_destroy(struct frag_allocator_t* owner, struct frag_allocator_t* allocator) {
-  // TODO: call the correct allocator
+  if (owner == NULL || allocator == NULL) {
+    return;
+  }
+  allocator->shutdown(allocator);
   frag_free(owner, allocator);
 }
 
-struct frag_allocator_t* frag_fixed_stack_allocator_create(struct frag_allocator_t* owner, const char* name, char* buf, size_t buf_size) {
+struct frag_allocator_t*
+frag_fixed_stack_allocator_create(struct frag_allocator_t* owner, const char* name, char* buf, size_t buf_size) {
   const size_t alloc_size = sizeof(frag_allocator_t) + sizeof(fixed_stack_allocator_impl_t);
   frag_allocator_t* allocator = (frag_allocator_t*)frag_alloc(owner, alloc_size, 16);
   allocator->impl = (struct allocator_impl_t*)(allocator + 1);

@@ -8,8 +8,18 @@ extern "C" {
 
 struct frag_allocator_t;
 
+typedef void (*frag_assert_handler_t)(const char* file, int line, const char* func, const char* expression, const char* message);
+
+struct frag_config_t {
+  // The handler to use for assertion failures.
+  frag_assert_handler_t assert_handler;
+};
+
+// Initializes teh given config struct to fill it in with the default values.
+void frag_config_init(struct frag_config_t* config);
+
 // Initializes this library. This will create the system allocator.
-void frag_init();
+void frag_init(const struct frag_config_t* config);
 
 // Tears down this library and frees all allocations.
 void frag_shutdown();

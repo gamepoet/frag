@@ -28,10 +28,10 @@ static size_t system_get_size(const frag_allocator_t* allocator, void* ptr) {
   return malloc_size(ptr);
 }
 
-void system_init(frag_allocator_t* allocator) {
-  allocator_init(allocator, "system", &system_alloc, &system_free, &system_get_size);
+static void system_shutdown(frag_allocator_t* allocator) {
+  allocator_shutdown(allocator);
 }
 
-void system_shutdown(frag_allocator_t* allocator) {
-  allocator_shutdown(allocator);
+void system_init(frag_allocator_t* allocator) {
+  allocator_init(allocator, "system", &system_alloc, &system_free, &system_get_size, &system_shutdown);
 }
