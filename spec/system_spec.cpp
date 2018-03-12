@@ -1,4 +1,3 @@
-#include "frag.h"
 #include "utils.h"
 
 TEST_CASE("system allocator", "[system]") {

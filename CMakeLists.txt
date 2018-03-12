@@ -6,6 +6,7 @@ set(
   src/fixed_stack.c
   src/frag.c
   src/frag.h
+  src/group.c
   src/internal.h
   src/system.c
 )
@@ -29,6 +30,7 @@ set(
   TEST_SRCS
   spec/catch.hpp
   spec/fixed_stack_spec.cpp
+  spec/group_spec.cpp
   spec/main.cpp
   spec/system_spec.cpp
   spec/utils.cpp

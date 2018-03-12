@@ -8,7 +8,22 @@ extern "C" {
 
 struct frag_allocator_t;
 
-typedef void (*frag_assert_handler_t)(const char* file, int line, const char* func, const char* expression, const char* message);
+struct frag_allocator_stats_t {
+  // The number of bytes currently allocated (including overhead)
+  size_t bytes;
+
+  // The number of allocations currently active.
+  size_t count;
+
+  // The peak number of bytes allocated (including overhead).
+  size_t bytes_peak;
+
+  // The peak number of allocations.
+  size_t count_peak;
+};
+
+typedef void (
+    *frag_assert_handler_t)(const char* file, int line, const char* func, const char* expression, const char* message);
 
 struct frag_config_t {
   // The handler to use for assertion failures.
@@ -64,7 +79,15 @@ struct frag_allocator_t* frag_system_allocator();
 void frag_allocator_destroy(struct frag_allocator_t* owner, struct frag_allocator_t* allocator);
 
 // Creates a stack allocator that works from a fixed buffer
-struct frag_allocator_t* frag_fixed_stack_allocator_create(struct frag_allocator_t* owner, const char* name, char* buf, size_t buf_size);
+struct frag_allocator_t*
+frag_fixed_stack_allocator_create(struct frag_allocator_t* owner, const char* name, char* buf, size_t buf_size);
+
+// Creates a group allocator that is just a thin wrapper around another allocator but conceptually groups them together.
+struct frag_allocator_t*
+frag_group_allocator_create(struct frag_allocator_t* owner, const char* name, struct frag_allocator_t* delegate);
+
+// Gets the stats for the given allocator.
+void frag_allocator_stats(const struct frag_allocator_t* allocator, struct frag_allocator_stats_t* stats);
 
 #ifdef __cplusplus
 #define FRAG_NEW(allocator, T, ...)                                                                                    \

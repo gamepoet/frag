@@ -1,5 +1,6 @@
 #pragma once
 #include "catch.hpp"
+#include "frag.h"
 #include <functional>
 #include <stdlib.h>
 
