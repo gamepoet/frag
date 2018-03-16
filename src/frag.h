@@ -30,7 +30,7 @@ struct frag_config_t {
   frag_assert_handler_t assert_handler;
 };
 
-// Initializes teh given config struct to fill it in with the default values.
+// Initializes the given config struct to fill it in with the default values.
 void frag_config_init(struct frag_config_t* config);
 
 // Initializes this library. This will create the system allocator.
