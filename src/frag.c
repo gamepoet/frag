@@ -1,6 +1,6 @@
+#include <stdio.h>
 #include "frag.h"
 #include "internal.h"
-#include <stdio.h>
 
 // the configuration used to initialize this library
 static frag_config_t s_config;
@@ -150,8 +150,7 @@ void frag_allocator_stats(const frag_allocator_t* allocator, frag_allocator_stat
   *stats = allocator->stats;
 }
 
-frag_allocator_t*
-frag_fixed_stack_allocator_create(frag_allocator_t* owner, const char* name, char* buf, size_t buf_size) {
+frag_allocator_t* frag_fixed_stack_allocator_create(frag_allocator_t* owner, const char* name, char* buf, size_t buf_size) {
   const size_t alloc_size = sizeof(frag_allocator_t) + sizeof(fixed_stack_allocator_impl_t);
   frag_allocator_t* allocator = (frag_allocator_t*)frag_alloc(owner, alloc_size, 8);
   allocator->impl = (allocator_impl_t*)(allocator + 1);
@@ -159,8 +158,7 @@ frag_fixed_stack_allocator_create(frag_allocator_t* owner, const char* name, cha
   return allocator;
 }
 
-frag_allocator_t*
-frag_group_allocator_create(frag_allocator_t* owner, const char* name, frag_allocator_t* delegate) {
+frag_allocator_t* frag_group_allocator_create(frag_allocator_t* owner, const char* name, frag_allocator_t* delegate) {
   const size_t alloc_size = sizeof(frag_allocator_t) + sizeof(group_allocator_impl_t);
   frag_allocator_t* allocator = (frag_allocator_t*)frag_alloc(owner, alloc_size, 8);
   allocator->impl = (allocator_impl_t*)(allocator + 1);

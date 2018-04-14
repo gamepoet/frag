@@ -69,8 +69,7 @@ void* frag_realloc_ex(frag_allocator_t* allocator,
 #define frag_free(allocator, ptr) frag_free_ex(allocator, ptr, __FILE__, __LINE__, __func__)
 
 // Reallocates the given memory.
-#define frag_realloc(allocator, ptr, size, alignment)                                                                  \
-  frag_realloc_ex(allocator, ptr, size, alignment, __FILE__, __LINE__, __func__)
+#define frag_realloc(allocator, ptr, size, alignment) frag_realloc_ex(allocator, ptr, size, alignment, __FILE__, __LINE__, __func__)
 
 // Gets the system allocator.
 frag_allocator_t* frag_system_allocator();
@@ -79,25 +78,22 @@ frag_allocator_t* frag_system_allocator();
 void frag_allocator_destroy(frag_allocator_t* owner, frag_allocator_t* allocator);
 
 // Creates a stack allocator that works from a fixed buffer
-frag_allocator_t*
-frag_fixed_stack_allocator_create(frag_allocator_t* owner, const char* name, char* buf, size_t buf_size);
+frag_allocator_t* frag_fixed_stack_allocator_create(frag_allocator_t* owner, const char* name, char* buf, size_t buf_size);
 
 // Creates a group allocator that is just a thin wrapper around another allocator but conceptually groups them together.
-frag_allocator_t*
-frag_group_allocator_create(frag_allocator_t* owner, const char* name, frag_allocator_t* delegate);
+frag_allocator_t* frag_group_allocator_create(frag_allocator_t* owner, const char* name, frag_allocator_t* delegate);
 
 // Gets the stats for the given allocator.
 void frag_allocator_stats(const frag_allocator_t* allocator, frag_allocator_stats_t* stats);
 
 #ifdef __cplusplus
-#define FRAG_NEW(allocator, T, ...)                                                                                    \
-  (new (frag_alloc_ex(allocator, sizeof(T), alignof(T), __FILE__, __LINE__, __func__)) T(__VA_ARGS__))
-#define FRAG_DELETE(allocator, T, ptr)                                                                                 \
-  do {                                                                                                                 \
-    if (ptr) {                                                                                                         \
-      (ptr)->~T();                                                                                                     \
-      frag_free(allocator, ptr, __FILE__, __LINE__, __func__);                                                         \
-    }                                                                                                                  \
+#define FRAG_NEW(allocator, T, ...) (new (frag_alloc_ex(allocator, sizeof(T), alignof(T), __FILE__, __LINE__, __func__)) T(__VA_ARGS__))
+#define FRAG_DELETE(allocator, T, ptr)                         \
+  do {                                                         \
+    if (ptr) {                                                 \
+      (ptr)->~T();                                             \
+      frag_free(allocator, ptr, __FILE__, __LINE__, __func__); \
+    }                                                          \
   } while (0)
 #endif // __cplusplus
 

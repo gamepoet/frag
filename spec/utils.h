@@ -1,11 +1,11 @@
 #pragma once
-#include "catch.hpp"
-#include "frag.h"
 #include <functional>
 #include <stdlib.h>
+#include "catch.hpp"
+#include "frag.h"
 
 struct init_t {
-  init_t(struct frag_config_t* config);
+  init_t(frag_config_t* config);
   ~init_t();
 };
 
@@ -19,6 +19,6 @@ struct defer_t {
   std::function<void()> deferred_func;
 };
 
-#define TOKEN_PASTE_IMPL(a, b) a ## b
+#define TOKEN_PASTE_IMPL(a, b) a##b
 #define TOKEN_PASTE(a, b) TOKEN_PASTE_IMPL(a, b)
 #define DEFER(func) defer_t TOKEN_PASTE(deferred_, __LINE__)(func)

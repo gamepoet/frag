@@ -31,8 +31,7 @@ bool is_aligned_ptr(void* ptr, size_t alignment) {
 }
 
 defer_t::defer_t(std::function<void()> func)
-  : deferred_func(func)
-{
+    : deferred_func(func) {
 }
 
 defer_t::~defer_t() {

@@ -1,7 +1,7 @@
 #pragma once
-#include "frag.h"
 #include <stdbool.h>
 #include <stdlib.h>
+#include "frag.h"
 
 typedef struct allocator_impl_t allocator_impl_t;
 typedef struct frag_allocator_t frag_allocator_t;
@@ -36,8 +36,7 @@ void allocator_init(frag_allocator_t* allocator,
 void allocator_shutdown(frag_allocator_t* allocator);
 
 void frag_assert_ex(const char* file, int line, const char* func, const char* expression, const char* message);
-#define frag_assert(expr, message)                                                                                     \
-  ((expr) ? true : (frag_assert_ex(__FILE__, __LINE__, __func__, #expr, message), false))
+#define frag_assert(expr, message) ((expr) ? true : (frag_assert_ex(__FILE__, __LINE__, __func__, #expr, message), false))
 
 bool is_pow_2(size_t x);
 void* align_up_with_offset_ptr(void* cur, size_t alignment, size_t offset);

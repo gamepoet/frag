@@ -7,7 +7,7 @@ TEST_CASE("fixed_stack allocator", "[fixed_stack]") {
   const size_t buf_size = 1024;
   char buf[buf_size];
   frag_allocator_t* allocator = frag_fixed_stack_allocator_create(system, "woot", buf, buf_size);
-  DEFER([&]{
+  DEFER([&] {
     frag_allocator_destroy(system, allocator);
   });
 
@@ -41,7 +41,7 @@ TEST_CASE("fixed_stack allocator detects memory leaks", "[fixed_stack]") {
   const size_t buf_size = 1024;
   char buf[buf_size];
   frag_allocator_t* allocator = frag_fixed_stack_allocator_create(system, "woot", buf, buf_size);
-  DEFER([&]{
+  DEFER([&] {
     frag_allocator_destroy(system, allocator);
   });
 
@@ -59,7 +59,7 @@ TEST_CASE("fixed_stack allocator requires ordered frees", "[fixed_stack]") {
   const size_t buf_size = 1024;
   char buf[buf_size];
   frag_allocator_t* allocator = frag_fixed_stack_allocator_create(system, "woot", buf, buf_size);
-  DEFER([&]{
+  DEFER([&] {
     frag_allocator_destroy(system, allocator);
   });
 
