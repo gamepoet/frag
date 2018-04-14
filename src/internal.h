@@ -58,6 +58,7 @@ void report_out_of_memory(frag_allocator_t* allocator,
                           const char* func);
 
 typedef struct system_allocator_impl_t {
+  int pad; // pad here to avoid empty struct which is not allowed in C
 } system_allocator_impl_t;
 
 void system_init(frag_allocator_t* allocator);

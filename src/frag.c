@@ -47,7 +47,7 @@ uintptr_t align_up(uintptr_t val, size_t alignment) {
 }
 
 void* align_up_with_offset_ptr(void* cur, size_t alignment, size_t offset) {
-  cur = cur + offset;
+  cur = (void*)((char*)cur + offset);
   cur = (void*)align_up((uintptr_t)cur, alignment);
   return cur;
 }
@@ -129,7 +129,7 @@ void frag_free_ex(frag_allocator_t* allocator, void* ptr, const char* file, int 
   if (allocator == NULL) {
     return;
   }
-  return allocator->free(allocator, ptr, file, line, func);
+  allocator->free(allocator, ptr, file, line, func);
 }
 
 frag_allocator_t* frag_system_allocator() {
