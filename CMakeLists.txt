@@ -37,9 +37,9 @@ set(
   spec/utils.h
 )
 
-add_executable(test_frag ${TEST_SRCS})
-target_compile_features(test_frag PRIVATE cxx_std_11)
-target_link_libraries(test_frag frag)
+add_executable(test_runner ${TEST_SRCS})
+target_compile_features(test_runner PRIVATE cxx_std_11)
+target_link_libraries(test_runner frag)
 
 enable_testing()
-add_test(NAME spec COMMAND test_frag)
+add_test(NAME spec COMMAND test_runner)
