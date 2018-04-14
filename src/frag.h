@@ -6,9 +6,9 @@
 extern "C" {
 #endif
 
-struct frag_allocator_t;
+typedef struct frag_allocator_t frag_allocator_t;
 
-struct frag_allocator_stats_t {
+typedef struct frag_allocator_stats_t {
   // The number of bytes currently allocated (including overhead)
   size_t bytes;
 
@@ -20,28 +20,28 @@ struct frag_allocator_stats_t {
 
   // The peak number of allocations.
   size_t count_peak;
-};
+} frag_allocator_stats_t;
 
 typedef void (
     *frag_assert_handler_t)(const char* file, int line, const char* func, const char* expression, const char* message);
 
-struct frag_config_t {
+typedef struct frag_config_t {
   // The handler to use for assertion failures.
   frag_assert_handler_t assert_handler;
-};
+} frag_config_t;
 
 // Initializes the given config struct to fill it in with the default values.
-void frag_config_init(struct frag_config_t* config);
+void frag_config_init(frag_config_t* config);
 
 // Initializes this library. This will create the system allocator.
-void frag_init(const struct frag_config_t* config);
+void frag_init(const frag_config_t* config);
 
 // Tears down this library and frees all allocations.
 void frag_shutdown();
 
 // Allocates memory from the given allocator. This is the extended API for when you want full control. Generally you'll
 // want to use the frag_alloc() macro.
-void* frag_alloc_ex(struct frag_allocator_t* allocator,
+void* frag_alloc_ex(frag_allocator_t* allocator,
                     size_t size,
                     size_t alignment,
                     const char* file,
@@ -50,11 +50,11 @@ void* frag_alloc_ex(struct frag_allocator_t* allocator,
 
 // Frees memory allocated with frag_alloc or frag_realloc. This is the extended API for when you want full control.
 // Generally you'll want to use frag_free() instead.
-void frag_free_ex(struct frag_allocator_t* allocator, void* ptr, const char* file, int line, const char* func);
+void frag_free_ex(frag_allocator_t* allocator, void* ptr, const char* file, int line, const char* func);
 
 // Reallocates the given memory, returning the new allocation. This is the extended API for when you want full control.
 // Generally you'll want to use the frag_realloc() macro instead.
-void* frag_realloc_ex(struct frag_allocator_t* allocator,
+void* frag_realloc_ex(frag_allocator_t* allocator,
                       void* ptr,
                       size_t size,
                       size_t alignment,
@@ -73,21 +73,21 @@ void* frag_realloc_ex(struct frag_allocator_t* allocator,
   frag_realloc_ex(allocator, ptr, size, alignment, __FILE__, __LINE__, __func__)
 
 // Gets the system allocator.
-struct frag_allocator_t* frag_system_allocator();
+frag_allocator_t* frag_system_allocator();
 
 // Destroys the given allocator.
-void frag_allocator_destroy(struct frag_allocator_t* owner, struct frag_allocator_t* allocator);
+void frag_allocator_destroy(frag_allocator_t* owner, frag_allocator_t* allocator);
 
 // Creates a stack allocator that works from a fixed buffer
-struct frag_allocator_t*
-frag_fixed_stack_allocator_create(struct frag_allocator_t* owner, const char* name, char* buf, size_t buf_size);
+frag_allocator_t*
+frag_fixed_stack_allocator_create(frag_allocator_t* owner, const char* name, char* buf, size_t buf_size);
 
 // Creates a group allocator that is just a thin wrapper around another allocator but conceptually groups them together.
-struct frag_allocator_t*
-frag_group_allocator_create(struct frag_allocator_t* owner, const char* name, struct frag_allocator_t* delegate);
+frag_allocator_t*
+frag_group_allocator_create(frag_allocator_t* owner, const char* name, frag_allocator_t* delegate);
 
 // Gets the stats for the given allocator.
-void frag_allocator_stats(const struct frag_allocator_t* allocator, struct frag_allocator_stats_t* stats);
+void frag_allocator_stats(const frag_allocator_t* allocator, frag_allocator_stats_t* stats);
 
 #ifdef __cplusplus
 #define FRAG_NEW(allocator, T, ...)                                                                                    \

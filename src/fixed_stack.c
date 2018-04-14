@@ -1,9 +1,9 @@
 #include "internal.h"
 
-struct header_t {
+typedef struct header_t {
   uint32_t pad;
   uint32_t size;
-};
+} header_t;
 
 #define GET_IMPL(allocator) ((fixed_stack_allocator_impl_t*)((allocator)->impl))
 #define GET_IMPL_CONST(allocator) ((const fixed_stack_allocator_impl_t*)((allocator)->impl))
@@ -12,7 +12,7 @@ static size_t fixed_stack_get_size(const frag_allocator_t* allocator, void* ptr)
   const fixed_stack_allocator_impl_t* impl = GET_IMPL_CONST(allocator);
 
   char* alloc_beg = (char*)ptr;
-  struct header_t* header = (struct header_t*)alloc_beg - 1;
+  header_t* header = (header_t*)alloc_beg - 1;
   char* alloc_end = alloc_beg + header->size;
   frag_assert(impl->cur == alloc_end, "tried to free an invalid pointer");
 
@@ -27,7 +27,7 @@ static void* fixed_stack_alloc(frag_allocator_t* allocator, size_t size, size_t 
   fixed_stack_allocator_impl_t* impl = GET_IMPL(allocator);
   char* cur = impl->cur;
   char* end = impl->end;
-  char* alloc_beg = (char*)align_up_with_offset_ptr(cur, alignment, sizeof(struct header_t));
+  char* alloc_beg = (char*)align_up_with_offset_ptr(cur, alignment, sizeof(header_t));
   char* alloc_end = alloc_beg + size;
   if (alloc_end > end) {
     report_out_of_memory(allocator, size, alignment, file, line, func);
@@ -35,7 +35,7 @@ static void* fixed_stack_alloc(frag_allocator_t* allocator, size_t size, size_t 
   }
 
   // just before the alloc, write how much padding was required to get alignment
-  struct header_t* header = (struct header_t*)alloc_beg - 1;
+  header_t* header = (header_t*)alloc_beg - 1;
   header->pad = (uint32_t)(alloc_beg - cur);
   header->size = size;
 
@@ -52,7 +52,7 @@ static void fixed_stack_free(frag_allocator_t* allocator, void* ptr, const char*
 
   const size_t size = fixed_stack_get_size(allocator, ptr);
   report_free(allocator, ptr, size, file, line, func);
-  struct header_t* header = (struct header_t*)ptr - 1;
+  header_t* header = (header_t*)ptr - 1;
   impl->cur = (char*)ptr - header->pad;
 }
 

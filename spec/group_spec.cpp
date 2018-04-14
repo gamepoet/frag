@@ -16,7 +16,7 @@ TEST_CASE("group_allocator", "[group]") {
   }
 
   SECTION("it tracks memory allocations") {
-    struct frag_allocator_stats_t stats;
+    frag_allocator_stats_t stats;
     frag_allocator_stats(group, &stats);
     CHECK(stats.count == 0);
     CHECK(stats.count_peak == 0);

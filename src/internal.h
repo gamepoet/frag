@@ -3,24 +3,23 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-struct allocator_impl_t;
-struct frag_allocator_t;
+typedef struct allocator_impl_t allocator_impl_t;
+typedef struct frag_allocator_t frag_allocator_t;
 
-typedef void* (*alloc_func_t)(struct frag_allocator_t* allocator,
+typedef void* (*alloc_func_t)(frag_allocator_t* allocator,
                               size_t size,
                               size_t alignment,
                               const char* file,
                               int line,
                               const char* func);
-typedef void (
-    *free_func_t)(struct frag_allocator_t* allocator, void* ptr, const char* file, int line, const char* func);
-typedef size_t (*get_size_func_t)(const struct frag_allocator_t* allocator, void* ptr);
-typedef void (*shutdown_func_t)(struct frag_allocator_t* allocator);
+typedef void (*free_func_t)(frag_allocator_t* allocator, void* ptr, const char* file, int line, const char* func);
+typedef size_t (*get_size_func_t)(const frag_allocator_t* allocator, void* ptr);
+typedef void (*shutdown_func_t)(frag_allocator_t* allocator);
 
 typedef struct frag_allocator_t {
   const char* name;
-  struct frag_allocator_stats_t stats;
-  struct allocator_impl_t* impl;
+  frag_allocator_stats_t stats;
+  allocator_impl_t* impl;
 
   alloc_func_t alloc;
   free_func_t free;
@@ -73,7 +72,7 @@ typedef struct fixed_stack_allocator_impl_t {
 void fixed_stack_init(frag_allocator_t* allocator, const char* name, char* buf, size_t size);
 
 typedef struct group_allocator_impl_t {
-  struct frag_allocator_t* delegate;
+  frag_allocator_t* delegate;
 } group_allocator_impl_t;
 
 void group_init(frag_allocator_t* allocator, const char* name, frag_allocator_t* delegate);
