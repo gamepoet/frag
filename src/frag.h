@@ -51,6 +51,9 @@ typedef void (
 typedef struct frag_config_t {
   // The handler to use for assertion failures.
   frag_assert_handler_t assert_handler;
+
+  // The default alignment to use if no alignment is specified (by giving zero).
+  size_t default_alignment;
 } frag_config_t;
 
 // Initializes the given config struct to fill it in with the default values.

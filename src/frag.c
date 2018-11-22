@@ -114,7 +114,7 @@ void allocator_shutdown(frag_allocator_t* allocator) {
 
 void* allocator_alloc(frag_allocator_t* allocator, size_t size, size_t alignment, const char* file, int line, const char* func, size_t* size_allocated) {
   if (alignment == 0) {
-    alignment = 16;
+    alignment = s_config.default_alignment;
   }
   void* ptr = allocator->alloc(allocator, size, alignment, file, line, func, size_allocated);
   if (ptr != NULL) {
@@ -147,6 +147,7 @@ frag_allocator_t* allocator_create(frag_allocator_t* owner, const frag_allocator
 void frag_config_init(frag_config_t* config) {
   if (config != NULL) {
     config->assert_handler = &default_assert;
+    config->default_alignment = 16;
   }
 }
 
