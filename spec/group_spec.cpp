@@ -4,7 +4,7 @@ TEST_CASE("group_allocator", "[group]") {
   init_t init(nullptr);
   frag_allocator_t* system = frag_system_allocator();
 
-  frag_allocator_t* group = frag_group_allocator_create(system, "group", system);
+  frag_allocator_t* group = frag_group_allocator_create(system, "group", true, system);
   DEFER([&] {
     frag_allocator_destroy(system, group);
   });
@@ -43,7 +43,7 @@ TEST_CASE("group allocator detects memory leaks", "[group]") {
   init_t init(nullptr);
   frag_allocator_t* system = frag_system_allocator();
 
-  frag_allocator_t* group = frag_group_allocator_create(system, "group", system);
+  frag_allocator_t* group = frag_group_allocator_create(system, "group", true, system);
   DEFER([&] {
     frag_allocator_destroy(system, group);
   });
