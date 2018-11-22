@@ -62,10 +62,10 @@ typedef struct frag_config_t {
 void frag_config_init(frag_config_t* config);
 
 // Initializes this library. This will create the system allocator.
-void frag_init(const frag_config_t* config);
+void frag_lib_init(const frag_config_t* config);
 
 // Tears down this library and frees all allocations.
-void frag_shutdown();
+void frag_lib_shutdown();
 
 // Allocates memory from the given allocator. This is the extended API for when you want full control. Generally you'll
 // want to use the frag_alloc() macro.

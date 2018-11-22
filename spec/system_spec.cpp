@@ -20,7 +20,7 @@ TEST_CASE("system allocator detects memory leaks", "[system]") {
 
   SECTION("it detects memory leaks on shutdown") {
     void* ptr = frag_alloc(system, 16, 32);
-    CHECK_THROWS(frag_shutdown());
+    CHECK_THROWS(frag_lib_shutdown());
     frag_free(system, ptr);
   }
 }

@@ -199,7 +199,7 @@ void frag_config_init(frag_config_t* config) {
   }
 }
 
-void frag_init(const frag_config_t* config) {
+void frag_lib_init(const frag_config_t* config) {
   if (config != NULL) {
     s_config = *config;
   }
@@ -212,7 +212,7 @@ void frag_init(const frag_config_t* config) {
   s_system_allocator = system_create(s_system_allocator_mem, SYSTEM_ALLOCATOR_MEM_SIZE_BYTES, "system", true);
 }
 
-void frag_shutdown() {
+void frag_lib_shutdown() {
   allocator_shutdown(s_system_allocator);
   s_system_allocator = NULL;
 }

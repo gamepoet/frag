@@ -12,11 +12,11 @@ init_t::init_t(struct frag_config_t* config) {
     config_default.assert_handler = &test_assert_handler;
     config = &config_default;
   }
-  frag_init(config);
+  frag_lib_init(config);
 }
 
 init_t::~init_t() {
-  frag_shutdown();
+  frag_lib_shutdown();
 }
 
 bool is_aligned(uintptr_t val, size_t alignment) {
