@@ -22,9 +22,10 @@ static void group_free(frag_allocator_t* allocator, void* ptr, const char* file,
 static void group_shutdown(frag_allocator_t* allocator) {
 }
 
-frag_allocator_t* group_create(frag_allocator_t* owner, const char* name, frag_allocator_t* delegate) {
+frag_allocator_t* group_create(frag_allocator_t* owner, const char* name, bool needs_lock, frag_allocator_t* delegate) {
   frag_allocator_desc_t desc = {0};
   desc.name = name;
+  desc.needs_lock = needs_lock;
   desc.alloc = &group_alloc;
   desc.free = &group_free;
   desc.get_size = &group_get_size;

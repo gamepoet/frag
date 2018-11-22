@@ -30,9 +30,10 @@ static size_t system_get_size(const frag_allocator_t* allocator, void* ptr) {
 static void system_shutdown(frag_allocator_t* allocator) {
 }
 
-frag_allocator_t* system_create(void* buffer, size_t buffer_size_bytes, const char* name) {
+frag_allocator_t* system_create(void* buffer, size_t buffer_size_bytes, const char* name, bool needs_lock) {
   frag_allocator_desc_t desc = {0};
   desc.name = name;
+  desc.needs_lock = needs_lock;
   desc.alloc = &system_alloc;
   desc.free = &system_free;
   desc.get_size = &system_get_size;

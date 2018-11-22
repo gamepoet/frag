@@ -13,7 +13,7 @@ typedef struct frag_allocator_desc_t {
   const char* name;
 
   // Should access to the allocator be protected with a mutex?
-//  bool needs_lock;
+  bool needs_lock;
 
   // The function to call to allocate memory using this allocator.
   void* (*alloc)(frag_allocator_t* allocator, size_t size, size_t alignment, const char* file, int line, const char* func, size_t* allocated_size);
@@ -108,10 +108,10 @@ frag_allocator_t* frag_allocator_create(frag_allocator_t* owner, const frag_allo
 void frag_allocator_destroy(frag_allocator_t* owner, frag_allocator_t* allocator);
 
 // Creates a stack allocator that works from a fixed buffer
-frag_allocator_t* frag_fixed_stack_allocator_create(frag_allocator_t* owner, const char* name, char* buf, size_t buf_size);
+frag_allocator_t* frag_fixed_stack_allocator_create(frag_allocator_t* owner, const char* name, bool needs_lock, char* buf, size_t buf_size);
 
 // Creates a group allocator that is just a thin wrapper around another allocator but conceptually groups them together.
-frag_allocator_t* frag_group_allocator_create(frag_allocator_t* owner, const char* name, frag_allocator_t* delegate);
+frag_allocator_t* frag_group_allocator_create(frag_allocator_t* owner, const char* name, bool needs_lock, frag_allocator_t* delegate);
 
 // Gets the stats for the given allocator.
 void frag_allocator_stats(const frag_allocator_t* allocator, frag_allocator_stats_t* stats);

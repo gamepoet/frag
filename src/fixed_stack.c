@@ -60,9 +60,10 @@ static void fixed_stack_free(frag_allocator_t* allocator, void* ptr, const char*
 static void fixed_stack_shutdown(frag_allocator_t* allocator) {
 }
 
-frag_allocator_t* fixed_stack_create(frag_allocator_t* owner, const char* name, char* buf, size_t size) {
+frag_allocator_t* fixed_stack_create(frag_allocator_t* owner, const char* name, bool needs_lock, char* buf, size_t size) {
   frag_allocator_desc_t desc = {0};
   desc.name = name;
+  desc.needs_lock = needs_lock;
   desc.alloc = &fixed_stack_alloc;
   desc.free = &fixed_stack_free;
   desc.get_size = &fixed_stack_get_size;

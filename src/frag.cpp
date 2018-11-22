@@ -1,12 +1,31 @@
+#include <mutex>
 #include <stdio.h>
 #include <string.h>
 #include "frag.h"
 #include "internal.h"
 
+class optional_lock_guard_t {
+public:
+  optional_lock_guard_t(std::mutex* mutex) {
+    m_mutex = mutex;
+    if (m_mutex != NULL) {
+      m_mutex->lock();
+    }
+  }
+  ~optional_lock_guard_t() {
+    if (m_mutex != NULL) {
+      m_mutex->unlock();
+    }
+  }
+
+private:
+  std::mutex* m_mutex;
+};
+
 // the configuration used to initialize this library
 static frag_config_t s_config;
 
-#define SYSTEM_ALLOCATOR_MEM_SIZE_BYTES (sizeof(frag_allocator_t) + (7 * sizeof(char)))
+#define SYSTEM_ALLOCATOR_MEM_SIZE_BYTES (sizeof(frag_allocator_t) + sizeof(std::mutex) + (7 * sizeof(char)))
 static char s_system_allocator_mem[SYSTEM_ALLOCATOR_MEM_SIZE_BYTES];
 static frag_allocator_t* s_system_allocator;
 
@@ -70,8 +89,11 @@ static void report_out_of_memory(frag_allocator_t* allocator,
 
 static size_t calc_allocator_size(const frag_allocator_desc_t* desc) {
   size_t size = sizeof(frag_allocator_t);
-  size += (strlen(desc->name) + 1) * sizeof(char);
+  if (desc->needs_lock) {
+    size += sizeof(std::mutex);
+  }
   size += desc->impl_size_bytes;
+  size += (strlen(desc->name) + 1) * sizeof(char);
   return size;
 }
 
@@ -84,6 +106,11 @@ frag_allocator_t* allocator_init(void* buffer, size_t buffer_size_bytes, frag_al
   frag_allocator_t* allocator = (frag_allocator_t*)cursor;
   cursor += sizeof(frag_allocator_t);
   void* impl = NULL;
+  std::mutex* mutex = NULL;
+  if (desc->needs_lock) {
+    mutex = new (cursor) std::mutex();
+    cursor += sizeof(std::mutex);
+  }
   if (desc->impl_size_bytes > 0) {
     impl = cursor;
     cursor += desc->impl_size_bytes;
@@ -98,6 +125,7 @@ frag_allocator_t* allocator_init(void* buffer, size_t buffer_size_bytes, frag_al
   allocator->stats.bytes_peak = 0;
   allocator->stats.count_peak = 0;
   allocator->owner = owner;
+  allocator->mutex = mutex;
   allocator->impl = impl;
   allocator->alloc = desc->alloc;
   allocator->free = desc->free;
@@ -110,12 +138,20 @@ frag_allocator_t* allocator_init(void* buffer, size_t buffer_size_bytes, frag_al
 void allocator_shutdown(frag_allocator_t* allocator) {
   frag_assert(allocator->stats.count == 0, "allocator shut down with unfreed allocations");
   allocator->shutdown(allocator);
+  std::mutex* mutex = (std::mutex*)allocator->mutex;
+  if (mutex != NULL) {
+    mutex->~mutex();
+  }
 }
 
 void* allocator_alloc(frag_allocator_t* allocator, size_t size, size_t alignment, const char* file, int line, const char* func, size_t* size_allocated) {
   if (alignment == 0) {
     alignment = s_config.default_alignment;
   }
+
+  // protect access to this allocator if necessary
+  optional_lock_guard_t lock((std::mutex*)allocator->mutex);
+
   void* ptr = allocator->alloc(allocator, size, alignment, file, line, func, size_allocated);
   if (ptr != NULL) {
     report_alloc(allocator, ptr, size, *size_allocated, alignment, file, line, func);
@@ -124,16 +160,28 @@ void* allocator_alloc(frag_allocator_t* allocator, size_t size, size_t alignment
     *size_allocated = 0;
     report_out_of_memory(allocator, size, alignment, file, line, func);
   }
+
   return ptr;
 }
 
 void allocator_free(frag_allocator_t* allocator, void* ptr, const char* file, int line, const char* func) {
-  size_t size_allocated = allocator_get_size(allocator, ptr);
+  bool debug = false;
+  if (!strcmp(allocator->name, "woot")) {
+    debug = true;
+  }
+
+  // protect access to this allocator if necessary
+  optional_lock_guard_t lock((std::mutex*)allocator->mutex);
+
+  size_t size_allocated = allocator->get_size(allocator, ptr);
   allocator->free(allocator, ptr, file, line, func);
   report_free(allocator, ptr, size_allocated, file, line, func);
 }
 
 size_t allocator_get_size(const frag_allocator_t* allocator, void* ptr) {
+  // protect access to this allocator if necessary
+  optional_lock_guard_t lock((std::mutex*)allocator->mutex);
+
   return allocator->get_size(allocator, ptr);
 }
 
@@ -161,7 +209,7 @@ void frag_init(const frag_config_t* config) {
 
   frag_assert(s_system_allocator == NULL, "frag_init is already initialized");
 
-  s_system_allocator = system_create(s_system_allocator_mem, SYSTEM_ALLOCATOR_MEM_SIZE_BYTES, "system");
+  s_system_allocator = system_create(s_system_allocator_mem, SYSTEM_ALLOCATOR_MEM_SIZE_BYTES, "system", true);
 }
 
 void frag_shutdown() {
@@ -204,13 +252,17 @@ void frag_allocator_destroy(frag_allocator_t* owner, frag_allocator_t* allocator
 void frag_allocator_stats(const frag_allocator_t* allocator, frag_allocator_stats_t* stats) {
   frag_assert(allocator != NULL, "allocator is null");
   frag_assert(stats != NULL, "stats is null");
+
+  // protect access to this allocator if necessary
+  optional_lock_guard_t lock((std::mutex*)allocator->mutex);
+
   *stats = allocator->stats;
 }
 
-frag_allocator_t* frag_fixed_stack_allocator_create(frag_allocator_t* owner, const char* name, char* buf, size_t buf_size) {
-  return fixed_stack_create(owner, name, buf, buf_size);
+frag_allocator_t* frag_fixed_stack_allocator_create(frag_allocator_t* owner, const char* name, bool needs_lock, char* buf, size_t buf_size) {
+  return fixed_stack_create(owner, name, needs_lock, buf, buf_size);
 }
 
-frag_allocator_t* frag_group_allocator_create(frag_allocator_t* owner, const char* name, frag_allocator_t* delegate) {
-  return group_create(owner, name, delegate);
+frag_allocator_t* frag_group_allocator_create(frag_allocator_t* owner, const char* name, bool needs_lock, frag_allocator_t* delegate) {
+  return group_create(owner, name, needs_lock, delegate);
 }

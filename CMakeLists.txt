@@ -4,7 +4,7 @@ project(frag)
 set(
   SRCS
   src/fixed_stack.c
-  src/frag.c
+  src/frag.cpp
   src/frag.h
   src/group.c
   src/internal.h
