@@ -10,7 +10,7 @@ TEST_CASE("group_allocator", "[group]") {
   });
 
   SECTION("it allocates properly aligned memory") {
-    void* ptr = frag_alloc(group, 16, 64);
+    void* ptr = frag_alloc_aligned(group, 16, 64);
     CHECK(is_aligned_ptr(ptr, 64));
     frag_free(group, ptr);
   }
@@ -20,11 +20,11 @@ TEST_CASE("group_allocator", "[group]") {
     frag_allocator_stats(group, &stats);
     CHECK(stats.count == 0);
     CHECK(stats.count_peak == 0);
-    void* ptr1 = frag_alloc(group, 8, 8);
+    void* ptr1 = frag_alloc_aligned(group, 8, 8);
     frag_allocator_stats(group, &stats);
     CHECK(stats.count == 1);
     CHECK(stats.count_peak == 1);
-    void* ptr2 = frag_alloc(group, 16, 16);
+    void* ptr2 = frag_alloc_aligned(group, 16, 16);
     frag_allocator_stats(group, &stats);
     CHECK(stats.count == 2);
     CHECK(stats.count_peak == 2);
@@ -49,7 +49,7 @@ TEST_CASE("group allocator detects memory leaks", "[group]") {
   });
 
   SECTION("it detects memory leaks on shutdown") {
-    void* ptr = frag_alloc(group, 16, 32);
+    void* ptr = frag_alloc_aligned(group, 16, 32);
     CHECK_THROWS(frag_allocator_destroy(system, group));
     frag_free(group, ptr);
   }

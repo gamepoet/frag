@@ -12,15 +12,15 @@ TEST_CASE("fixed_stack allocator", "[fixed_stack]") {
   });
 
   SECTION("it can allocate properly aligned memory") {
-    void* ptr = frag_alloc(allocator, 16, 64);
+    void* ptr = frag_alloc_aligned(allocator, 16, 64);
     REQUIRE(is_aligned_ptr(ptr, 64));
     frag_free(allocator, ptr);
   }
 
   SECTION("it allocates memory with sequential addresses") {
-    void* ptr1 = frag_alloc(allocator, 16, 16);
-    void* ptr2 = frag_alloc(allocator, 32, 8);
-    void* ptr3 = frag_alloc(allocator, 23, 128);
+    void* ptr1 = frag_alloc_aligned(allocator, 16, 16);
+    void* ptr2 = frag_alloc_aligned(allocator, 32, 8);
+    void* ptr3 = frag_alloc_aligned(allocator, 23, 128);
     REQUIRE(is_aligned_ptr(ptr1, 16));
     REQUIRE(is_aligned_ptr(ptr2, 8));
     REQUIRE(is_aligned_ptr(ptr3, 128));
@@ -46,7 +46,7 @@ TEST_CASE("fixed_stack allocator detects memory leaks", "[fixed_stack]") {
   });
 
   SECTION("it detects memory leaks on shutdown") {
-    void* ptr = frag_alloc(allocator, 16, 32);
+    void* ptr = frag_alloc_aligned(allocator, 16, 32);
     CHECK_THROWS(frag_allocator_destroy(system, allocator));
     frag_free(allocator, ptr);
   }
@@ -64,8 +64,8 @@ TEST_CASE("fixed_stack allocator requires ordered frees", "[fixed_stack]") {
   });
 
   SECTION("it asserts when freeing a pointer that's not on top") {
-    void* ptr1 = frag_alloc(allocator, 8, 8);
-    void* ptr2 = frag_alloc(allocator, 16, 16);
+    void* ptr1 = frag_alloc_aligned(allocator, 8, 8);
+    void* ptr2 = frag_alloc_aligned(allocator, 16, 16);
     CHECK_THROWS(frag_free(allocator, ptr1));
     frag_free(allocator, ptr2);
     frag_free(allocator, ptr1);

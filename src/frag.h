@@ -80,8 +80,11 @@ void* frag_alloc_ex(frag_allocator_t* allocator,
 // want to use frag_free() instead.
 void frag_free_ex(frag_allocator_t* allocator, void* ptr, const char* file, int line, const char* func);
 
-// Allocates memory from the given allocator.
-#define frag_alloc(allocator, size, alignment) frag_alloc_ex(allocator, size, alignment, __FILE__, __LINE__, __func__)
+// Allocates memory with default alignment from the given allocator.
+#define frag_alloc(allocator, size) frag_alloc_ex(allocator, size, 0, __FILE__, __LINE__, __func__)
+
+// Allocates aligned memory from the given allocator.
+#define frag_alloc_aligned(allocator, size, alignment) frag_alloc_ex(allocator, size, alignment, __FILE__, __LINE__, __func__)
 
 // Frees memory from the given allocator.
 #define frag_free(allocator, ptr) frag_free_ex(allocator, ptr, __FILE__, __LINE__, __func__)

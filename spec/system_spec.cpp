@@ -6,7 +6,7 @@ TEST_CASE("system allocator", "[system]") {
   REQUIRE(system != nullptr);
 
   SECTION("it can allocate aligned memory") {
-    void* ptr = frag_alloc(system, 16, 64);
+    void* ptr = frag_alloc_aligned(system, 16, 64);
     CHECK(ptr != nullptr);
     CHECK(is_aligned_ptr(ptr, 64));
     frag_free(system, ptr);
@@ -19,7 +19,7 @@ TEST_CASE("system allocator detects memory leaks", "[system]") {
   REQUIRE(system != nullptr);
 
   SECTION("it detects memory leaks on shutdown") {
-    void* ptr = frag_alloc(system, 16, 32);
+    void* ptr = frag_alloc_aligned(system, 16, 32);
     CHECK_THROWS(frag_lib_shutdown());
     frag_free(system, ptr);
   }
