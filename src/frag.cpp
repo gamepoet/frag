@@ -165,11 +165,6 @@ void* allocator_alloc(frag_allocator_t* allocator, size_t size, size_t alignment
 }
 
 void allocator_free(frag_allocator_t* allocator, void* ptr, const char* file, int line, const char* func) {
-  bool debug = false;
-  if (!strcmp(allocator->name, "woot")) {
-    debug = true;
-  }
-
   // protect access to this allocator if necessary
   optional_lock_guard_t lock((std::mutex*)allocator->mutex);
 
