@@ -24,7 +24,7 @@ typedef struct frag_allocator_desc_t {
   // The function to call to free memory using this allocator.
   void (*free)(frag_allocator_t* allocator, void* ptr, const char* file, int line, const char* func);
 
-  // The function to call to get the allocator size of memory using this allocator.
+  // The function to call to get the allocated size of memory using this allocator.
   size_t (*get_size)(const frag_allocator_t* allocator, void* ptr);
 
   // The function to call when destroying this allocator.
