@@ -49,10 +49,18 @@ typedef struct frag_allocator_stats_t {
 } frag_allocator_stats_t;
 
 typedef void (*frag_assert_handler_t)(const char* file, int line, const char* func, const char* expression, const char* message);
+typedef void (*frag_report_out_of_memory_handler_t)(const frag_allocator_t* allocator, size_t size, size_t alignment, const char* file, int line, const char* func);
+typedef void (*frag_report_leak_handler_t)(const frag_allocator_t* allocator);
 
 typedef struct frag_config_t {
   // The handler to use for assertion failures.
   frag_assert_handler_t assert_handler;
+
+  // The handler to use to report a memory leak.
+  frag_report_leak_handler_t report_leak;
+
+  // The handler to use to report memory exhaustion.
+  frag_report_out_of_memory_handler_t report_out_of_memory;
 
   // The default alignment to use if no alignment is specified (by giving zero).
   size_t default_alignment;

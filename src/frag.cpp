@@ -34,6 +34,17 @@ static void default_assert(const char* file, int line, const char* func, const c
   exit(EXIT_FAILURE);
 }
 
+static void default_report_leak(const frag_allocator_t* allocator) {
+  char message[128];
+  snprintf(message, 128, "leak detected. allocator=%s, count=%zu, size=%zu", allocator->name, allocator->stats.count, allocator->stats.bytes);
+  message[127] = 0;
+  frag_assert(false, message);
+}
+
+static void default_report_out_of_memory(const frag_allocator_t* allocator, size_t size, size_t alignment, const char* file, int line, const char* func) {
+  frag_assert(false, "out of memory");
+}
+
 void frag_assert_ex(const char* file, int line, const char* func, const char* expression, const char* message) {
   s_config.assert_handler(file, line, func, expression, message);
 }
@@ -78,13 +89,17 @@ static void report_free(frag_allocator_t* allocator, void* ptr, size_t size, con
   allocator->stats.bytes -= size;
 }
 
-static void report_out_of_memory(frag_allocator_t* allocator,
+static void report_leak(const frag_allocator_t* allocator) {
+  s_config.report_leak(allocator);
+}
+
+static void report_out_of_memory(const frag_allocator_t* allocator,
                                  size_t size,
-                                 unsigned int alignment,
+                                 size_t alignment,
                                  const char* file,
                                  int line,
                                  const char* func) {
-  frag_assert(false, "out of memory");
+  s_config.report_out_of_memory(allocator, size, alignment, file, line, func);
 }
 
 static size_t calc_allocator_size(const frag_allocator_desc_t* desc) {
@@ -136,7 +151,9 @@ frag_allocator_t* allocator_init(void* buffer, size_t buffer_size_bytes, frag_al
 }
 
 void allocator_shutdown(frag_allocator_t* allocator) {
-  frag_assert(allocator->stats.count == 0, "allocator shut down with unfreed allocations");
+  if (allocator->stats.count != 0) {
+    report_leak(allocator);
+  }
   allocator->shutdown(allocator);
   std::mutex* mutex = (std::mutex*)allocator->mutex;
   if (mutex != NULL) {
@@ -190,6 +207,8 @@ frag_allocator_t* allocator_create(frag_allocator_t* owner, const frag_allocator
 void frag_config_init(frag_config_t* config) {
   if (config != NULL) {
     config->assert_handler = &default_assert;
+    config->report_leak = &default_report_leak;
+    config->report_out_of_memory = &default_report_out_of_memory;
     config->default_alignment = 16;
   }
 }
