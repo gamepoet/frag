@@ -109,14 +109,8 @@ frag_allocator_t* frag_group_allocator_create(frag_allocator_t* owner, const cha
 void frag_allocator_stats(const frag_allocator_t* allocator, frag_allocator_stats_t* stats);
 
 #ifdef __cplusplus
-#define FRAG_NEW(allocator, T, ...) (new (frag_alloc_ex(allocator, sizeof(T), alignof(T), __FILE__, __LINE__, __func__)) T(__VA_ARGS__))
-#define FRAG_DELETE(allocator, T, ptr)                         \
-  do {                                                         \
-    if (ptr) {                                                 \
-      (ptr)->~T();                                             \
-      frag_free(allocator, ptr, __FILE__, __LINE__, __func__); \
-    }                                                          \
-  } while (0)
+#define FRAG_NEW(allocator, T, ...) (new (frag_alloc(allocator, sizeof(T), alignof(T))) T(__VA_ARGS__))
+#define FRAG_DELETE(allocator, T, ptr) ((ptr) ? (ptr)->~T(), frag_free(allocator, ptr) : 0)
 #endif // __cplusplus
 
 #ifdef __cplusplus
