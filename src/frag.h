@@ -117,10 +117,22 @@ frag_allocator_t* frag_group_allocator_create(frag_allocator_t* owner, const cha
 void frag_allocator_stats(const frag_allocator_t* allocator, frag_allocator_stats_t* stats);
 
 #ifdef __cplusplus
-#define FRAG_NEW(allocator, T, ...) (new (frag_alloc_aligned(allocator, sizeof(T), alignof(T))) T(__VA_ARGS__))
-#define FRAG_DELETE(allocator, T, ptr) ((ptr) ? (ptr)->~T(), frag_free(allocator, ptr) : 0)
-#endif // __cplusplus
-
-#ifdef __cplusplus
 }
 #endif
+
+#ifdef __cplusplus
+// Deletes the given object from the given allocator. This is the extended API for when you want full control. Generally
+// you'll want to use the frag_new() macro.
+template<typename T>
+inline void frag_delete_ex(T* ptr, frag_allocator_t* allocator, const char* file, int line, const char* func) {
+  ptr->~T();
+  frag_free_ex(allocator, ptr, file, line, func);
+}
+
+// Allocates and constructs an object of the given type from the given allocator with default alignment.
+#define frag_new(allocator, T) new (frag_alloc_ex(allocator, sizeof(T), 0, __FILE__, __LINE__, __func__)) T
+
+// Deletes the given object from the given allocator.
+#define frag_delete(allocator, ptr) frag_delete_ex(ptr, allocator, __FILE__, __LINE__, __func__)
+
+#endif // __cplusplus

@@ -47,6 +47,7 @@ if (FRAG_BUILD_TESTS)
     spec/fixed_stack_spec.cpp
     spec/group_spec.cpp
     spec/main.cpp
+    spec/new_delete_spec.cpp
     spec/system_spec.cpp
     spec/utils.cpp
     spec/utils.h

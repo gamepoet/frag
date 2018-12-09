@@ -284,3 +284,11 @@ frag_allocator_t* frag_fixed_stack_allocator_create(frag_allocator_t* owner, con
 frag_allocator_t* frag_group_allocator_create(frag_allocator_t* owner, const char* name, bool needs_lock, frag_allocator_t* delegate) {
   return group_create(owner, name, needs_lock, delegate);
 }
+
+void* operator new(size_t size, frag_allocator_t* allocator, const char* file, int line, const char* func) {
+  return frag_alloc(allocator, size);
+}
+
+void operator delete(void* ptr, frag_allocator_t* allocator, const char* file, int line, const char* func) {
+  frag_free(allocator, ptr);
+}
