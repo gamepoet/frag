@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.11)
 project(frag LANGUAGES C CXX)
 
 option(FRAG_BUILD_TESTS "Build tests" OFF)
+option(FRAG_COVERAGE "Enabled code coverage" OFF)
 
 # max out the warning settings for the compilers (why isn't there a generic way to do this?)
 if (MSVC)
@@ -38,6 +39,12 @@ target_compile_options(
   $<$<CXX_COMPILER_ID:AppleClang>:-Wall -Wextra -Wpedantic -Wno-unused-parameter>
   $<$<CXX_COMPILER_ID:MSVC>:/W4 /wd4100>
 )
+if (FRAG_COVERAGE)
+  target_compile_options(frag PRIVATE $<$<CXX_COMPILER_ID:AppleClang>:--coverage>)
+  if (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+    set_target_properties(frag PROPERTIES LINK_FLAGS --coverage)
+  endif()
+endif()
 
 # test app
 if (FRAG_BUILD_TESTS)
@@ -72,6 +79,12 @@ if (FRAG_BUILD_TESTS)
     $<$<CXX_COMPILER_ID:AppleClang>:-Wall -Wextra -Wpedantic -Wno-unused-parameter>
     $<$<CXX_COMPILER_ID:MSVC>:/W4 /wd4100>
   )
+  if (FRAG_COVERAGE)
+    target_compile_options(test_runner PRIVATE $<$<CXX_COMPILER_ID:AppleClang>:--coverage>)
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+      set_target_properties(test_runner PROPERTIES LINK_FLAGS --coverage)
+    endif()
+  endif()
 
   enable_testing()
   add_test(NAME spec COMMAND test_runner)
