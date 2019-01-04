@@ -46,3 +46,12 @@ TEST_CASE("frag_alloc_aligned_zero", "[general]") {
     frag_free(system, ptr);
   }
 }
+
+TEST_CASE("frag_free", "[general]") {
+  init_t init(nullptr);
+  frag_allocator_t* system = frag_system_allocator();
+
+  SECTION("it accepts a null pointer") {
+    frag_free(system, NULL);
+  }
+}
