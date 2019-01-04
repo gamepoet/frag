@@ -63,6 +63,7 @@ if (FRAG_BUILD_TESTS)
   add_executable(
     test_runner
     spec/fixed_stack_spec.cpp
+    spec/general_spec.cpp
     spec/group_spec.cpp
     spec/main.cpp
     spec/new_delete_spec.cpp

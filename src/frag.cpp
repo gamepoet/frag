@@ -248,6 +248,23 @@ void* frag_alloc_ex(frag_allocator_t* allocator,
   return allocator_alloc(allocator, size, alignment, file, line, func, &size_allocated);
 }
 
+void* frag_alloc_zero_ex(frag_allocator_t* allocator,
+                         size_t size,
+                         size_t alignment,
+                         const char* file,
+                         int line,
+                         const char* func) {
+  if (allocator == NULL) {
+    return NULL;
+  }
+  size_t size_allocated;
+  void* ptr = allocator_alloc(allocator, size, alignment, file, line, func, &size_allocated);
+  if (ptr != NULL) {
+    memset(ptr, 0, size);
+  }
+  return ptr;
+}
+
 void frag_free_ex(frag_allocator_t* allocator, void* ptr, const char* file, int line, const char* func) {
   if (allocator == NULL) {
     return;

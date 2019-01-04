@@ -84,6 +84,15 @@ void* frag_alloc_ex(frag_allocator_t* allocator,
                     int line,
                     const char* func);
 
+// Allocates memory from the given allocator that is zeroed. This is the extended API for when you want full control.
+// Generally you'll want to use the frag_alloc() macro.
+void* frag_alloc_zero_ex(frag_allocator_t* allocator,
+                         size_t size,
+                         size_t alignment,
+                         const char* file,
+                         int line,
+                         const char* func);
+
 // Frees memory allocated with frag_alloc. This is the extended API for when you want full control. Generally, you'll
 // want to use frag_free() instead.
 void frag_free_ex(frag_allocator_t* allocator, void* ptr, const char* file, int line, const char* func);
@@ -93,6 +102,12 @@ void frag_free_ex(frag_allocator_t* allocator, void* ptr, const char* file, int 
 
 // Allocates aligned memory from the given allocator.
 #define frag_alloc_aligned(allocator, size, alignment) frag_alloc_ex(allocator, size, alignment, __FILE__, __LINE__, __func__)
+
+// Allocates memory with default alignment from the given allocator that is zeroed.
+#define frag_alloc_zero(allocator, size) frag_alloc_zero_ex(allocator, size, 0, __FILE__, __LINE__, __func__)
+
+// Allocates aligned memory from the given allocator that is zeroed.
+#define frag_alloc_aligned_zero(allocator, size, alignment) frag_alloc_zero_ex(allocator, size, alignment, __FILE__, __LINE__, __func__)
 
 // Frees memory from the given allocator.
 #define frag_free(allocator, ptr) frag_free_ex(allocator, ptr, __FILE__, __LINE__, __func__)
