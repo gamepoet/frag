@@ -9,8 +9,8 @@ extern "C" {
 
 typedef struct frag_allocator_debug_t {
   frag_debug_alloc_info_t* allocs;
-  uint32_t count;
-  uint32_t capacity;
+  unsigned int count;
+  unsigned int capacity;
 } frag_allocator_debug_t;
 
 typedef struct frag_allocator_t {

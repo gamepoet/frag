@@ -57,7 +57,7 @@ typedef struct frag_debug_alloc_info_t {
 
 typedef struct frag_leak_report_t {
   const frag_debug_alloc_info_t* allocs;
-  uint32_t alloc_count;
+  unsigned int alloc_count;
 } frag_leak_report_t;
 
 typedef void (*frag_assert_handler_t)(const char* file, int line, const char* func, const char* expression, const char* message);

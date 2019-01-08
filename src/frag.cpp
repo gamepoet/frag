@@ -40,7 +40,7 @@ static void default_report_leak(const frag_allocator_t* allocator, const frag_le
   message[127] = 0;
 
   fprintf(stderr, "%s\n", message);
-  for (uint32_t index = 0; index < report->alloc_count; ++index) {
+  for (unsigned int index = 0; index < report->alloc_count; ++index) {
     const frag_debug_alloc_info_t* alloc = report->allocs;
     fprintf(stderr, "%03u ptr=%016lx file='%s' line=%d func=%s\n", index, (uintptr_t)alloc->ptr, alloc->file, alloc->line, alloc->func);
   }
