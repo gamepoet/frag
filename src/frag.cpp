@@ -34,10 +34,16 @@ static void default_assert(const char* file, int line, const char* func, const c
   exit(EXIT_FAILURE);
 }
 
-static void default_report_leak(const frag_allocator_t* allocator) {
+static void default_report_leak(const frag_allocator_t* allocator, const frag_leak_report_t* report) {
   char message[128];
   snprintf(message, 128, "leak detected. allocator=%s, count=%zu, size=%zu", allocator->name, allocator->stats.count, allocator->stats.bytes);
   message[127] = 0;
+
+  fprintf(stderr, "%s\n", message);
+  for (uint32_t index = 0; index < report->alloc_count; ++index) {
+    const frag_debug_alloc_info_t* alloc = report->allocs;
+    fprintf(stderr, "%03u ptr=%016lx file='%s' line=%d func=%s\n", index, (uintptr_t)alloc->ptr, alloc->file, alloc->line, alloc->func);
+  }
   frag_assert(false, message);
 }
 
@@ -80,6 +86,24 @@ static void report_alloc(frag_allocator_t* allocator,
   if (allocator->stats.bytes > allocator->stats.bytes_peak) {
     allocator->stats.bytes_peak = allocator->stats.bytes;
   }
+
+  if (s_config.enable_detailed_leak_reports) {
+    frag_allocator_debug_t* debug = &allocator->debug;
+    if (debug->count >= debug->capacity) {
+      const uint32_t new_capacity = debug->capacity + 256;
+      size_t size_allocated;
+      frag_debug_alloc_info_t* allocs = (frag_debug_alloc_info_t*)s_system_allocator->alloc(s_system_allocator, new_capacity * sizeof(frag_debug_alloc_info_t), s_config.default_alignment, __FILE__, __LINE__, __func__, &size_allocated);
+      memmove(allocs, debug->allocs, debug->count * sizeof(frag_debug_alloc_info_t));
+      debug->allocs = allocs;
+      debug->capacity = new_capacity;
+    }
+    frag_debug_alloc_info_t* alloc = debug->allocs + debug->count;
+    alloc->ptr = ptr;
+    alloc->file = file;
+    alloc->line = line;
+    alloc->func = func;
+    ++debug->count;
+  }
 }
 
 static void report_free(frag_allocator_t* allocator, void* ptr, size_t size, const char* file, int line, const char* func) {
@@ -87,10 +111,28 @@ static void report_free(frag_allocator_t* allocator, void* ptr, size_t size, con
   // assert(allocator->stats.bytes >= size);
   --allocator->stats.count;
   allocator->stats.bytes -= size;
+
+  if (s_config.enable_detailed_leak_reports) {
+    frag_allocator_debug_t* debug = &allocator->debug;
+    for (uint32_t index = 0; index < debug->count; ++index) {
+      frag_debug_alloc_info_t* alloc = debug->allocs + index;
+      if (alloc->ptr == ptr) {
+        // remove this entry
+        uint32_t last_index = debug->count - 1;
+        if (index < last_index) {
+          memmove(debug->allocs + index, debug->allocs + last_index, sizeof(frag_debug_alloc_info_t));
+        }
+        --debug->count;
+      }
+    }
+  }
 }
 
 static void report_leak(const frag_allocator_t* allocator) {
-  s_config.report_leak(allocator);
+  frag_leak_report_t report = {};
+  report.allocs = allocator->debug.allocs;
+  report.alloc_count = allocator->debug.count;
+  s_config.report_leak(allocator, &report);
 }
 
 static void report_out_of_memory(const frag_allocator_t* allocator,
@@ -146,6 +188,9 @@ frag_allocator_t* allocator_init(void* buffer, size_t buffer_size_bytes, frag_al
   allocator->free = desc->free;
   allocator->get_size = desc->get_size;
   allocator->shutdown = desc->shutdown;
+  allocator->debug.allocs = NULL;
+  allocator->debug.count = 0;
+  allocator->debug.capacity = 0;
 
   return allocator;
 }
@@ -153,6 +198,11 @@ frag_allocator_t* allocator_init(void* buffer, size_t buffer_size_bytes, frag_al
 void allocator_shutdown(frag_allocator_t* allocator) {
   if (allocator->stats.count != 0) {
     report_leak(allocator);
+  }
+  if (s_config.enable_detailed_leak_reports) {
+    if (allocator->debug.count > 0) {
+      s_system_allocator->free(s_system_allocator, allocator->debug.allocs, __FILE__, __LINE__, __func__);
+    }
   }
   allocator->shutdown(allocator);
   std::mutex* mutex = (std::mutex*)allocator->mutex;
@@ -214,6 +264,7 @@ void frag_config_init(frag_config_t* config) {
     config->report_leak = &default_report_leak;
     config->report_out_of_memory = &default_report_out_of_memory;
     config->default_alignment = 16;
+    config->enable_detailed_leak_reports = false;
   }
 }
 

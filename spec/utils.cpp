@@ -5,11 +5,16 @@ static void test_assert_handler(const char* file, int line, const char* func, co
   throw std::runtime_error(message);
 }
 
+static void test_report_leak_handler(const frag_allocator_t* allocator, const frag_leak_report_t* report) {
+  throw std::runtime_error("memory leak");
+}
+
 init_t::init_t(struct frag_config_t* config) {
   frag_config_t config_default;
   if (!config) {
     frag_config_init(&config_default);
     config_default.assert_handler = &test_assert_handler;
+    config_default.report_leak = &test_report_leak_handler;
     config = &config_default;
   }
   frag_lib_init(config);

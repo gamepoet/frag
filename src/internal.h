@@ -7,6 +7,12 @@
 extern "C" {
 #endif
 
+typedef struct frag_allocator_debug_t {
+  frag_debug_alloc_info_t* allocs;
+  uint32_t count;
+  uint32_t capacity;
+} frag_allocator_debug_t;
+
 typedef struct frag_allocator_t {
   const char* name;
   frag_allocator_stats_t stats;
@@ -18,6 +24,8 @@ typedef struct frag_allocator_t {
   void (*free)(frag_allocator_t* allocator, void* ptr, const char* file, int line, const char* func);
   size_t (*get_size)(const frag_allocator_t* allocator, void* ptr);
   void (*shutdown)(frag_allocator_t* allocator);
+
+  frag_allocator_debug_t debug;
 } frag_allocator_t;
 
 frag_allocator_t* allocator_init(void* buffer, size_t buffer_size_bytes, frag_allocator_t* owner, const frag_allocator_desc_t* desc);

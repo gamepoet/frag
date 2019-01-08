@@ -48,9 +48,21 @@ typedef struct frag_allocator_stats_t {
   size_t count_peak;
 } frag_allocator_stats_t;
 
+typedef struct frag_debug_alloc_info_t {
+  void* ptr;
+  const char* file;
+  const char* func;
+  int line;
+} frag_debug_alloc_info_t;
+
+typedef struct frag_leak_report_t {
+  const frag_debug_alloc_info_t* allocs;
+  uint32_t alloc_count;
+} frag_leak_report_t;
+
 typedef void (*frag_assert_handler_t)(const char* file, int line, const char* func, const char* expression, const char* message);
 typedef void (*frag_report_out_of_memory_handler_t)(const frag_allocator_t* allocator, size_t size, size_t alignment, const char* file, int line, const char* func);
-typedef void (*frag_report_leak_handler_t)(const frag_allocator_t* allocator);
+typedef void (*frag_report_leak_handler_t)(const frag_allocator_t* allocator, const frag_leak_report_t* report);
 
 typedef struct frag_config_t {
   // The handler to use for assertion failures.
@@ -64,6 +76,9 @@ typedef struct frag_config_t {
 
   // The default alignment to use if no alignment is specified (by giving zero).
   size_t default_alignment;
+
+  // Enabled more detailed memory leak reporting by tracking the file and line of each outstanding allocation.
+  bool enable_detailed_leak_reports;
 } frag_config_t;
 
 // Initializes the given config struct to fill it in with the default values.
