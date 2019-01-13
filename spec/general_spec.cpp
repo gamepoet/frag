@@ -55,3 +55,26 @@ TEST_CASE("frag_free", "[general]") {
     frag_free(system, NULL);
   }
 }
+
+TEST_CASE("frag_realloc", "[general]") {
+  init_t init(nullptr);
+  frag_allocator_t* system = frag_system_allocator();
+
+  SECTION("it accepts a null ptr") {
+    uint32_t* ptr = (uint32_t*)frag_realloc(system, NULL, 3 * sizeof(uint32_t));
+    CHECK(ptr != NULL);
+    frag_free(system, ptr);
+  }
+
+  SECTION("it frees the memory if new size is zero") {
+    uint32_t* ptr = (uint32_t*)frag_alloc(system, 3 * sizeof(uint32_t));
+    ptr[0] = 5;
+    ptr[1] = 10;
+    ptr[2] = 15;
+    ptr = (uint32_t*)frag_realloc(system, ptr, 4 * sizeof(uint32_t));
+    CHECK(ptr[0] == 5);
+    CHECK(ptr[1] == 10);
+    CHECK(ptr[2] == 15);
+    frag_free(system, ptr);
+  }
+}
