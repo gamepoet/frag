@@ -123,6 +123,7 @@ static void report_free(frag_allocator_t* allocator, void* ptr, size_t size, con
           memmove(debug->allocs + index, debug->allocs + last_index, sizeof(frag_debug_alloc_info_t));
         }
         --debug->count;
+        break;
       }
     }
   }
