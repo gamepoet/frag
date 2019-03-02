@@ -114,7 +114,7 @@ static void report_free(frag_allocator_t* allocator, void* ptr, size_t size, con
 
   if (s_config.enable_detailed_leak_reports) {
     frag_allocator_debug_t* debug = &allocator->debug;
-    for (uint32_t iter = debug->count + 1; iter > 0; --iter) {
+    for (uint32_t iter = debug->count; iter > 0; --iter) {
       uint32_t index = iter - 1;
       frag_debug_alloc_info_t* alloc = debug->allocs + index;
       if (alloc->ptr == ptr) {
